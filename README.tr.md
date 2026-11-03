@@ -71,7 +71,8 @@ Her iddia log/getevent/disasm çıktısıyla doğrulandı; örnek kesitler:
 ## Depoda ne var
 
 ```
-docs/                            7 bölümlük tam dokümantasyon (okuma sırası aşağıda)
+docs/                            7 bölümlük tam dokümantasyon — Türkçe
+docs/en/                          aynı yedi dokümanın tamamen İngilizce sürümü
 tools/arduino/fabrika/           evrensel IR atıcı (fabrika.ino + atış scripti)
 tools/arduino/{kumanda,tus_kaydet,ogren_gonder,ses_ac_oto}/   IR araç-zinciri sketch'leri
 tools/arduino/rcu_hesap.py       RCU 13-hane + CRC16-CCITT-FALSE üreteci (not: kelime formatı eski — docs/04)
@@ -90,6 +91,25 @@ assets/                          kapak GIF + gerçek devre fotoğrafı + alıcı
 5. [docs/05 — Ölen Yollar Envanteri](docs/05-olen-yollar-envanteri.md) — 20+ kapatılmış vektör, gerekçeleriyle
 6. [docs/06 — Dersler](docs/06-dersler.md) — teknik + metod + disiplin (14 ders)
 7. [docs/07 — Araçlar ve Kullanım](docs/07-araclar-ve-kullanim.md) — her aracın tarifi
+
+## ⚡ Hâlâ işe yarayabilecek, denenmemiş tek yol — fiziksel UART. Dene.
+
+Yukarıdaki her şey yazılım kapılarının kapandığını kanıtlıyor. **Tam bir kanal hiç
+denenmedi ve kapalı olduğuna dair hiç kanıt yok: fiziksel UART.** Bu TV'nin sahibi
+aile cihazını açamadı — ama *sen* bu modelde ya da kardeşinde servis hattına
+erişebiliyorsan, her parçası hazırlanmış, gerçekten umut verici bir yol:
+
+1. **Hattı bul.** Daemon UART'ı HAL üzerinden okur (`/dev/ttyS0`). Arkada servis/RS232
+   jakı ara (otel modeli TCL'lerde olur); yoksa test noktaları ana karttadır.
+2. **Bedava köprüle.** USB-TTL gerekmez: **RESET→GND** yapınca Arduino Uno bir
+   USB-seri köprüsü olur (seviyeye dikkat — TV'nin 3,3 V TX'ini Uno RX'e inen bölücüden geçir).
+3. **Kanal uçtan uca haritalı.** `myuart → transfer_data → FCMD`
+   ([docs/02 §3](docs/02-daemon-un-haritasi.md)) — aynı root komut işlemcisi, 56 baytlık
+   `get_system_prop` enjeksiyon payload'u hazır bekliyor.
+4. **Daemon'u reboot'suz kaldır** M-jar kapısıyla
+   ([docs/07 §7](docs/07-araclar-ve-kullanim.md), `pmon`).
+
+Denersen — başarı da başarımsızlık da — issue ya da PR aç; bu depo bulgularını taşır.
 
 ## Devam etmek isteyen için
 

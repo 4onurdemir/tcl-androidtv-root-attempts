@@ -20,10 +20,9 @@ key sequence simply do not exist in the TV's own key table — **no valid sequen
 ever be transmitted.** UART is physical; the p2p thread only ever spawns *from* a valid
 IR sequence. The software surface: exhausted. This repo is the whole journey.
 
-> **A note on languages:** this README is in English; the deep documentation (the seven
-> phase documents: recon, daemon internals, the IR war, kernel proofs, the dead-end
-> inventory, 14 lessons, tooling) is written in Turkish. Code comments and this file
-> carry the essentials in English. Translation PRs are very welcome.
+> **A note on languages:** this README is in English, and so is the full documentation:
+> the seven phase documents live in [`docs/en/`](docs/en/) (Turkish originals in
+> [`docs/`](docs/)). Code comments follow English where it matters.
 
 ---
 
@@ -81,7 +80,8 @@ Every claim was verified against logs/getevent/disassembly; sample excerpts:
 ## What's in the repo
 
 ```
-docs/                            the seven phase documents (Turkish; reading order below)
+docs/                            the seven phase documents — Turkish originals
+docs/en/                          the same seven documents, fully in English
 tools/arduino/fabrika/           the universal IR blaster (fabrika.ino + firing script)
 tools/arduino/{kumanda,tus_kaydet,ogren_gonder,ses_ac_oto}/   the IR tool-chain sketches
 tools/arduino/rcu_hesap.py       RCU 13-byte + CRC16-CCITT-FALSE generator (note: legacy word format — docs/04)
@@ -93,13 +93,36 @@ assets/                          cover GIF + real-rig photo + receiver/TV wiring
 
 ### Reading order
 
-1. [docs/01 — Recon & access doors](docs/01-kesif-ve-erisim-kapilari.md) — firmware acquisition, the uid-1000 door, the M-jar harness family *(TR)*
-2. [docs/02 — Inside the daemon](docs/02-daemon-un-haritasi.md) — socket protocol, FCMD, ts/p2p, the root shell points *(TR)*
-3. [docs/03 — The IR war: from 38 to 56 kHz](docs/03-ir-savasi-38den-56ye.md) — every death and the breakthrough *(TR)*
-4. [docs/04 — Root phase: kernel proofs](docs/04-kok-fazi-kernel-kanitlari.md) — w19, type-0x19, the impossibility proof, p2p's birth *(TR)*
-5. [docs/05 — The dead-end inventory](docs/05-olen-yollar-envanteri.md) — 20+ closed vectors, with reasons *(TR)*
-6. [docs/06 — Lessons](docs/06-dersler.md) — technical + method + discipline (14 lessons) *(TR)*
-7. [docs/07 — Tools & usage](docs/07-araclar-ve-kullanim.md) — every tool's recipe *(TR)*
+1. [docs/en/01 — Recon & access doors](docs/en/01-kesif-ve-erisim-kapilari.md) — firmware acquisition, the uid-1000 door, the M-jar harness family 
+2. [docs/en/02 — Inside the daemon](docs/en/02-daemon-un-haritasi.md) — socket protocol, FCMD, ts/p2p, the root shell points 
+3. [docs/en/03 — The IR war: from 38 to 56 kHz](docs/en/03-ir-savasi-38den-56ye.md) — every death and the breakthrough 
+4. [docs/en/04 — Root phase: kernel proofs](docs/en/04-kok-fazi-kernel-kanitlari.md) — w19, type-0x19, the impossibility proof, p2p's birth 
+5. [docs/en/05 — The dead-end inventory](docs/en/05-olen-yollar-envanteri.md) — 20+ closed vectors, with reasons 
+6. [docs/en/06 — Lessons](docs/en/06-dersler.md) — technical + method + discipline (14 lessons) 
+7. [docs/en/07 — Tools & usage](docs/en/07-araclar-ve-kullanim.md) — every tool's recipe 
+
+## ⚡ The one untested path that can still work — physical UART. Try it.
+
+Everything above proves the software doors are shut. **Exactly one channel was never
+tested, and there is no evidence it is closed: the physical UART.** The owner of this
+particular TV couldn't open a family device — but if *you* can reach the service line
+on this model or a sibling, this is a genuinely promising path with every piece already
+prepared:
+
+1. **Find the line.** The daemon reads the UART through its HAL (`/dev/ttyS0`).
+   Look for a service/RS232 jack on the back panel (hotel-model TCLs carry one);
+   otherwise the UART test points sit on the main board.
+2. **Bridge it for free.** No USB-TTL required: an Arduino Uno with **RESET→GND**
+   becomes a USB-serial bridge (mind the levels — divide the TV's 3.3 V TX down
+   toward the Uno's RX).
+3. **The channel is mapped end-to-end.** `myuart → transfer_data → FCMD`
+   ([docs/en/02 §3](docs/en/02-daemon-un-haritasi.md)) — the very same root command
+   processor, with the 56-byte `get_system_prop` injection payload ready and waiting.
+4. **Bring the daemon up without a reboot** via the M-jar door
+   ([docs/en/07 §7](docs/en/07-araclar-ve-kullanim.md), `pmon`).
+
+If you test it — success or failure — open an issue or a PR; this repo will carry
+your findings.
 
 ## For whoever continues
 
