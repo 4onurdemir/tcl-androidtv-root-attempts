@@ -125,6 +125,20 @@ on third parties, no damage; the TV was returned to factory state at the end (cl
 record in docs/06, lesson 13). Everything here is defensive security research and
 education.
 
+## Attribution (required)
+
+If this repository helped your work, the license asks for one small thing:
+credit the author in your project's credits/attribution section:
+
+```text
+Author: 4onurdemir
+GitHub: https://github.com/4onurdemir
+Web:    https://onurdemir.dev
+```
+
+Everything else is up to you — modify, redistribute, build commercial things,
+license your own work however you like.
+
 ## License
 
-[MIT](LICENSE) — code and documentation free to use.
+[MIT + Attribution](LICENSE) — free to use, with the credit line above.

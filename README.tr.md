@@ -111,6 +111,20 @@ Sahibi olduğum tek cihazda, kendi ağım içinde yapıldı. Saldırı yok, kims
 cihaz çalışma sonunda fabrika durumuna döndürüldü (temizlik kaydı docs/06, ders 13).
 Buradaki bilgi yalnızca savunma araştırması ve eğitim amaçlıdır.
 
+## Atıf (zorunlu)
+
+Bu depo işine yaradıysa, lisans tek küçük şey istiyor: projenin
+katkıda bulunanlar/atıf bölümünde yazarı anman:
+
+```text
+Yazar:  4onurdemir
+GitHub: https://github.com/4onurdemir
+Web:    https://onurdemir.dev
+```
+
+Geri kalan her şey serbest — değiştir, dağıt, ticari işler çıkar,
+kendi çalışmanı dilediğin lisansle yayınla.
+
 ## Lisans
 
-[MIT](LICENSE) — kod ve dokümanlar serbestçe kullanılabilir.
+[MIT + Atıf](LICENSE) — kullanım serbest, yukarıdaki atıf satırı ile birlikte.
