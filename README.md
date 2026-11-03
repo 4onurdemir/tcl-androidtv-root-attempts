@@ -37,6 +37,12 @@ IR sequence. The software surface: exhausted. This repo is the whole journey.
 | Kernel | 5.4.284+ · security patch 2025-12-05 |
 | Remote | RC833A dual-mode (Bluetooth HID + IR) |
 
+![the real rig](assets/devre-fotografi.png)
+
+*The real rig that talked to the TV: Arduino Uno + 2N2222A driver + 940 nm IR LED —
+photographed during the sessions. This circuit raised and lowered the TV's volume,
+key by key, and carried every factory probe in docs/04.*
+
 The research was done on a device owned by the author, strictly inside their own home
 network. The TV was never opened; no persistent writes, no key/MID/SN tampering; the
 device was returned to factory state the moment the work ended.
@@ -82,7 +88,7 @@ tools/arduino/rcu_hesap.py       RCU 13-byte + CRC16-CCITT-FALSE generator (note
 tools/factorysock.py             client for the 27856 factory socket
 tools/p2pclient.py               ts-protocol client skeleton
 data/                            key table + kernel ir_table.bin + raw log + evidence excerpts
-assets/                          cover GIF + receiver/TV wiring guide (PDF)
+assets/                          cover GIF + real-rig photo + receiver/TV wiring guide (PDF)
 ```
 
 ### Reading order

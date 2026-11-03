@@ -30,6 +30,12 @@ Yazılımsal yüzey: bitti. Bu depo, o yolculuğun tamamı.
 | Kernel | 5.4.284+ · güvenlik yaması 2025-12-05 |
 | Kumanda | RC833A dual-mode (Bluetooth HID + IR) |
 
+![gerçek devre](assets/devre-fotografi.png)
+
+*TV ile konuşan gerçek düzenek: Arduino Uno + 2N2222A sürücü + 940 nm IR LED —
+çalışma anından fotoğraf. Bu devre TV'nin sesini tuş tuş açıp kapattı ve docs/04'teki
+tüm fabrika problarını taşıdı.*
+
 Araştırma bizzat sahibi olan cihaz üzerinde, yalnızca kendi ev ağı sınırları içinde
 yapıldı. Cihazın içi hiç açılmadı; kalıcı yazma/anahtar yazımı hiç yapılmadı; çalışma
 biter bitmez cihaz fabrika durumuna iade edildi.
@@ -72,7 +78,7 @@ tools/arduino/rcu_hesap.py       RCU 13-hane + CRC16-CCITT-FALSE üreteci (not: 
 tools/factorysock.py             27856 fabrika socket istemcisi
 tools/p2pclient.py               ts protokol istemci taslağı
 data/                            tuş tablosu + kernel ir_table.bin + ham ölçüm + kanıt kesitleri
-assets/                          kapak görseli + alıcı/TV bağlantı rehberi (PDF)
+assets/                          kapak GIF + gerçek devre fotoğrafı + alıcı/TV bağlantı rehberi (PDF)
 ```
 
 ### Okuma sırası
