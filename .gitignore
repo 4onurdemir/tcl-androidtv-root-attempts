@@ -1,0 +1,4 @@
+.DS_Store
+*.o
+*.elf
+__pycache__/

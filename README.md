@@ -1,0 +1,130 @@
+![cover](assets/kapak.gif)
+
+---
+
+> 🌐 **Languages:** **English** (this file) · [🇹🇷 Türkçe](README.tr.md)
+
+# The Complete Map of a TCL Android TV's Factory Layer — and the Proof of Why Software Root Is Impossible on This Firmware
+
+> Eight days, one TCL 65T61C, one Arduino Uno, and hundreds of closed doors.
+> This repo is not a "root guide" — it's a **closure report**: the TV's factory/service
+> layer was mapped end to end, software root was shown — with evidence — to be
+> unattainable on this firmware, and everything was documented so the next researcher
+> doesn't have to re-walk the graveyard.
+
+**The short story:** inside the TV runs a root daemon called `tclfactoryos`, and inside
+*it* runs a command processor with a `system()` call behind it. Three channels lead
+there: IR, UART, and p2p. We fully reverse-engineered the IR protocol (56 kHz!),
+disassembled the kernel driver, and proved that the fixed marker bytes of the factory
+key sequence simply do not exist in the TV's own key table — **no valid sequence can
+ever be transmitted.** UART is physical; the p2p thread only ever spawns *from* a valid
+IR sequence. The software surface: exhausted. This repo is the whole journey.
+
+> **A note on languages:** this README is in English; the deep documentation (the seven
+> phase documents: recon, daemon internals, the IR war, kernel proofs, the dead-end
+> inventory, 14 lessons, tooling) is written in Turkish. Code comments and this file
+> carry the essentials in English. Translation PRs are very welcome.
+
+---
+
+## The device
+
+| | |
+|---|---|
+| Model | TCL 65T61C (65", Android TV 12) |
+| Platform | Realtek RTD2875P / rtd6748 |
+| Firmware | V8-R75PT01-LF1V618 (build STT2.230203.001 release-keys) |
+| Kernel | 5.4.284+ · security patch 2025-12-05 |
+| Remote | RC833A dual-mode (Bluetooth HID + IR) |
+
+The research was done on a device owned by the author, strictly inside their own home
+network. The TV was never opened; no persistent writes, no key/MID/SN tampering; the
+device was returned to factory state the moment the work ended.
+
+## The five findings that matter
+
+1. **The IR protocol: a 56 kHz carrier.** Every reference says 38 kHz; this receiver
+   wants 56. That single mismatch silently killed every early attempt. Header
+   4000+4000 µs, 24-bit MSB-first `ADDR(4)|CMD(8)|~ADDR(4)|~CMD(8)`, bit = 500 µs mark
+   + 1000/2000 µs space. Full 40-key code table: [`data/TCL-kumanda-kodlari.md`](data/TCL-kumanda-kodlari.md).
+2. **The kernel IR driver's private language, decoded.** Frames are accumulated
+   LSB-first, each byte bitrev8-transformed, into a 32-bit `w19`; the key table matches
+   these values (VOL+ = `0x0b0f4f00`, verified byte-for-byte). Factory keys surface as
+   special `type-0x19` input events — and the **argument byte comes from the key table,
+   not the frame**.
+3. **The impossibility proof.** The daemon's factory sequence demands fixed marker
+   bytes `0x01` and `0x0C`; those values must come from the table's digit family
+   (`{b2,a3,f7,ac,81,58,92,ef}`); they don't exist there. **No valid sequence can be
+   constructed.** On top of that, the report-mode flag that gates type-0x19 emission
+   lives behind root-only sysfs.
+4. **The secret birth of the p2p channel.** Nothing at daemon startup creates the
+   reverse-connect thread; only a valid IR commit ever spawns it. Which means
+   **neither a reboot nor a daemon restart brings p2p back** — the finding that
+   killed the "write the IP to the DB and reboot" hope with evidence.
+5. **A uid-1000 code-exec door.** TCL's diagnostics service runs any jar you hand it
+   as system_app, plus a factory socket on 127.0.0.1:27856 (144-byte frames, a
+   property DB with no whitelist). Not root — but fingers on the root surface.
+
+## Evidence
+
+Every claim was verified against logs/getevent/disassembly; sample excerpts:
+[`data/kanit-ornekleri.md`](data/kanit-ornekleri.md) · raw IR measurement log:
+[`data/tus_kaydi_ham.log`](data/tus_kaydi_ham.log) · the kernel key table itself:
+[`data/ir_table.bin`](data/ir_table.bin) (+ parser: [`tools/arduino/ir_tablo_parse.py`](tools/arduino/ir_tablo_parse.py)).
+
+## What's in the repo
+
+```
+docs/                            the seven phase documents (Turkish; reading order below)
+tools/arduino/fabrika/           the universal IR blaster (fabrika.ino + firing script)
+tools/arduino/{kumanda,tus_kaydet,ogren_gonder,ses_ac_oto}/   the IR tool-chain sketches
+tools/arduino/rcu_hesap.py       RCU 13-byte + CRC16-CCITT-FALSE generator (note: legacy word format — docs/04)
+tools/factorysock.py             client for the 27856 factory socket
+tools/p2pclient.py               ts-protocol client skeleton
+data/                            key table + kernel ir_table.bin + raw log + evidence excerpts
+assets/                          cover GIF + receiver/TV wiring guide (PDF)
+```
+
+### Reading order
+
+1. [docs/01 — Recon & access doors](docs/01-kesif-ve-erisim-kapilari.md) — firmware acquisition, the uid-1000 door, the M-jar harness family *(TR)*
+2. [docs/02 — Inside the daemon](docs/02-daemon-un-haritasi.md) — socket protocol, FCMD, ts/p2p, the root shell points *(TR)*
+3. [docs/03 — The IR war: from 38 to 56 kHz](docs/03-ir-savasi-38den-56ye.md) — every death and the breakthrough *(TR)*
+4. [docs/04 — Root phase: kernel proofs](docs/04-kok-fazi-kernel-kanitlari.md) — w19, type-0x19, the impossibility proof, p2p's birth *(TR)*
+5. [docs/05 — The dead-end inventory](docs/05-olen-yollar-envanteri.md) — 20+ closed vectors, with reasons *(TR)*
+6. [docs/06 — Lessons](docs/06-dersler.md) — technical + method + discipline (14 lessons) *(TR)*
+7. [docs/07 — Tools & usage](docs/07-araclar-ve-kullanim.md) — every tool's recipe *(TR)*
+
+## For whoever continues
+
+- **Another model of the same family?** Pull `ir_table.bin` from its `factory_ro`
+  partition and check the 0xD family for `0x01`/`0x0C` keycodes — if they're there,
+  the IR-RCU sequence **can work** on that model (our proof is specific to this
+  firmware's table).
+- **The hardware path:** some TCLs carry an external service/RS232 jack on the back;
+  an Arduino Uno with RESET→GND is a free USB-TTL bridge. The moment the channel
+  opens, the first shot is ready: `get_system_prop` key =
+  `x;id>/sdcard/Download/R1.txt;id>/data/local/tmp/R2.txt;#`
+  (56 bytes < 64 — docs/02).
+- TCL's 2020 public root (SICK-2020-012) is patched on this firmware; generic kernel
+  LPEs are closed by the 2025-12 patch level.
+
+## Why publish this
+
+Because a negative result with proof is a contribution. This repo belongs to whoever
+wasted days on the wrong carrier frequency (the 56 kHz lesson), to the circuit that
+"worked" with a wrong pinout (the C–B–E errata), to the "just reboot it, maybe"
+hope (and the evidence for why it wouldn't), and to anyone curious about what runs
+inside a TCL TV. Sister project: [gt111a-ozgurlestirme](https://github.com/4onurdemir/gt111a-ozgurlestirme)
+(the rescue lessons of a camera that couldn't be saved).
+
+## Ethics & legality
+
+Performed on a single device owned by the author, inside their own network. No attacks
+on third parties, no damage; the TV was returned to factory state at the end (cleanup
+record in docs/06, lesson 13). Everything here is defensive security research and
+education.
+
+## License
+
+[MIT](LICENSE) — code and documentation free to use.
